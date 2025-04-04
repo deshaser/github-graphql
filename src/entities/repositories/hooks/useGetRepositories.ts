@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRepositoriesByOwnerQuery } from '@/entities/repositories/gql/queries/repositoriesByOwner.graphql';
 import { RepositoryFragment } from '@/entities/repositories/gql/fragments/repository.graphql';
 
-const REPOS_PER_PAGE = 20;
+const REPOS_PER_PAGE = 10;
 
 export const useGetRepositories = (login: string) => {
   const [hasMore, setHasMore] = useState(true);
@@ -11,7 +11,7 @@ export const useGetRepositories = (login: string) => {
     setHasMore(true);
   }, [login]);
 
-  const { data, loading: isLoading, fetchMore } = useRepositoriesByOwnerQuery({
+  const { data, loading: isLoading, fetchMore, error } = useRepositoriesByOwnerQuery({
     variables: {
       login,
       first: REPOS_PER_PAGE,
@@ -63,5 +63,6 @@ export const useGetRepositories = (login: string) => {
     isLoading,
     hasMore,
     loadMore,
+    error,
   };
-}; 
+};

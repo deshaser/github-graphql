@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Spinner } from '../Spinner';
+import { Spinner } from './Spinner';
 
 interface InfiniteScrollProps {
   onLoadMore: () => void;
