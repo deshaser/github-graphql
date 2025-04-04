@@ -1,0 +1,8 @@
+fragment Repository on Repository {
+  __typename
+  id
+  name
+  description
+  url
+  updatedAt
+}

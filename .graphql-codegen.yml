@@ -1,0 +1,31 @@
+overwrite: true
+verbose: false
+schema:
+  - ${NEXT_PUBLIC_GRAPHQL_SCHEMA_PATH}:
+      headers:
+        User-Agent: 'node.js'
+        Authorization: 'bearer ${NEXT_PUBLIC_GRAPHQL_SCHEMA_TOKEN}'
+generates:
+  src/__generated__/graphql.ts:
+    plugins:
+      - typescript
+
+  src/services/gql/__generated__/fragment-matcher.json:
+    documents: 'src/**/*.graphql'
+    plugins:
+      - fragment-matcher
+
+  src/services/gql/__generated__/typedTypePolicies.d.ts:
+    documents: 'src/**/*.graphql'
+    plugins:
+      - typescript-apollo-client-helpers
+
+  src/:
+    preset: 'near-operation-file'
+    presetConfig:
+      extension: '.graphql.ts'
+      baseTypesPath: '__generated__/graphql.ts'
+    documents: 'src/**/*.graphql'
+    plugins:
+      - typescript-operations
+      - typescript-react-apollo

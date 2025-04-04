@@ -1,0 +1,11 @@
+# import Repository from '../fragments/repository.graphql'
+
+query repositoriesByOwner($login: String!) {
+  repositoryOwner(login: $login) {
+    repositories(first: 10) {
+      nodes {
+        ...Repository
+      }
+    }
+  }
+}
