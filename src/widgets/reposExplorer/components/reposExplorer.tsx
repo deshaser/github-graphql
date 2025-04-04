@@ -1,49 +1,59 @@
 'use client';
-import { RepoCard } from '@/entities/repositories';
-import { useRepositoriesByOwnerQuery } from '@/entities/repositories/gql/queries/repositoriesByOwner.graphql';
-import { Input } from '@/shared/components/ui/Input';
-import { Spinner } from '@/shared/components/ui/Spinner';
+
 import { useState } from 'react';
+
+import { RepoCard } from '@/entities/repositories';
+import { useGetRepositories } from '@/entities/repositories/hooks/useGetRepositories';
+import { ErrorMessage, InfiniteScroll, Input } from '@/shared/components/ui';
+import { useDebounce } from '@/shared/lib/hooks/useDebounce';
 
 export const ReposExplorer = () => {
   const [login, setLogin] = useState('');
+  const debouncedLogin = useDebounce(login, 300);
+  const { repos, isLoading, hasMore, loadMore, error } = useGetRepositories(debouncedLogin);
 
-  const { data, loading: isLoading } = useRepositoriesByOwnerQuery({
-    variables: {
-      login,
-    },
-    notifyOnNetworkStatusChange: true,
-    skip: !login,
-  });
-  const repos = data?.repositoryOwner?.repositories.nodes;
+  const errorMessage = error
+    ? error.message === 'Could not resolve to a User with the login of'
+      ? 'Пользователь не найден'
+      : 'Произошла ошибка при загрузке репозиториев. Пожалуйста, попробуйте позже.'
+    : '';
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-prose">
       <Input
-        {...{
-          name: 'login',
-          label: 'Логин GitHub',
-          placeholder: 'Введите логин для поиска репозиториев',
-          value: login,
-          onChange: e => setLogin(e.target.value),
-        }}
+        name="login"
+        label="Логин GitHub"
+        placeholder="Введите логин для поиска репозиториев"
+        value={login}
+        onChange={e => setLogin(e.target.value)}
       />
-      {!!repos?.length && (
-        <div className="flex flex-col gap-3">
-          {repos?.map(repo =>
-            repo ? (
-              <RepoCard
-                key={repo.id}
-                {...{
-                  repo,
-                }}
-              />
-            ) : null
-          )}
-        </div>
+
+      {error && <ErrorMessage message={errorMessage} />}
+
+      <InfiniteScroll
+        onLoadMore={loadMore}
+        isLoading={isLoading}
+        hasMore={hasMore}
+      >
+        {repos?.map(repo => (
+          <RepoCard
+            key={repo.id}
+            repo={repo}
+          />
+        ))}
+
+        {!hasMore && repos && repos.length > 0 && (
+          <p className="text-center text-gray-500 my-4">
+            Больше репозиториев не найдено
+          </p>
+        )}
+      </InfiniteScroll>
+
+      {!!debouncedLogin && !isLoading && !error && !repos?.length && (
+        <p className="text-center text-gray-500">
+          Репозитории не найдены
+        </p>
       )}
-      {!!login && !isLoading && !repos?.length && <p>Репозитории не найдены</p>}
-      {isLoading && <Spinner className="self-center" />}
     </div>
   );
 };
